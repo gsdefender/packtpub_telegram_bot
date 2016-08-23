@@ -99,7 +99,10 @@ def error(bot, update, error):
 def main():
     config = configparser.ConfigParser()
     config.read(config_file)
-    token = config['Bot']['token']
+    try:
+        token = config['Bot']['token']
+    except AttributeError: # not python 3
+        token = config.get('Bot','token')
     updater = Updater(token)
     
     # Get the dispatcher to register handlers
