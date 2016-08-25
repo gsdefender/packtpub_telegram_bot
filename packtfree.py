@@ -25,22 +25,21 @@ free_learning_page = "https://www.packtpub.com/packt/offers/free-learning"
 
 def get_book_info(base_page=free_learning_page):
 	epoch = delorean.Delorean(datetime.utcnow(), timezone="UTC").truncate('day').epoch
+	image_filename = '.freelearning_cache/book_image_'+str(epoch)+'.jpg'
 	http = httplib2.Http('.freelearning_cache')
 	
 	try:
 		book_info_response, book_info_html = http.request( base_page )
 		book_info_soup = BeautifulSoup(book_info_html,"lxml")
-		
-		image_url = 'http:'+book_info_soup.find("img", {"class":"bookimage"})['src']
+
+		if book_info_response.fromcache is False:
+		    image_url = 'http:'+book_info_soup.find("img", {"class":"bookimage"})['src']
+    		    urllib.urlretrieve(image_url, image_filename) # why can't httplib2 fetch this?
+
 		# 1. Value types
 
 		title = re.sub('\n', '', re.sub('\t', '',  book_info_soup.find("div", {"class":"dotd-title"}).find("h2").text)) 
-	
-		image_filename = '.freelearning_cache/book_image_'+str(epoch)+'.jpg'
-		
-		if book_info_response.fromcache is False:
-    		    urllib.urlretrieve(image_url, image_filename) # why can't httplib2 fetch this?
-			
+				
 		description_haystack =  book_info_soup.find("div", {"class":"dotd-main-book-summary"}).findAll("div")
 		description = ''
 		
