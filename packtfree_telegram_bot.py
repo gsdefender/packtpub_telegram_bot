@@ -30,11 +30,6 @@ import pickle
 import configparser
 from functools import wraps
 
-config_file = 'packtfree_telegram_bot.ini'
-
-# FIXME: Autoupdate at 3.00 a.m. is dependent on the European timezone
-
-autoupdate_time = None
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
@@ -42,6 +37,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 JOBS_PICKLE = 'job_tuples.pickle'
+CONFIG_FILE = 'packtfree_telegram_bot.ini'
 
 # WARNING: This information may change in future versions (changes are planned)
 JOB_DATA = ('callback', 'interval', 'repeat', 'context', 'days', 'name', 'tzinfo')
@@ -131,7 +127,7 @@ def send_book_info(update, context):
 def register(update, context):
     """Adds a job to the queue"""
     chat_id = update.message.chat_id
-    _token, autoupdate_time = read_config(config_file)
+    _token, autoupdate_time = read_config(CONFIG_FILE)
     update_time_delta = datetime.timedelta(minutes=60)
     update_time = autoupdate_time + update_time_delta
 
@@ -178,7 +174,7 @@ def read_config(config_file):
 
 
 def main():
-    token, autoupdate_time = read_config(config_file)
+    token, autoupdate_time = read_config(CONFIG_FILE)
     updater = Updater(token, use_context=True)
 
     dp = updater.dispatcher

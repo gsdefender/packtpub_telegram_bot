@@ -18,13 +18,13 @@ import html2text
 import pickle
 import os.path
 # This URL can (will?) change:
-_free_learning_page = "https://packtpub.com/free-learning"
-_pickle_file_name = 'book_info.pickle'
+_FREE_LEARNING_PAGE = "https://packtpub.com/free-learning"
+_BOOK_INFO_PICKLE_FILE = 'book_info.pickle'
 
 def get_book_info(force=False):
-	if not os.path.isfile(_pickle_file_name) or force is True:
+	if not os.path.isfile(_BOOK_INFO_PICKLE_FILE) or force is True:
 		driver = webdriver.Chrome()
-		driver.get( _free_learning_page )
+		driver.get( _FREE_LEARNING_PAGE )
 
 		product_img = driver.find_element_by_class_name("product__img")
 		image_url = product_img.get_attribute('src')
@@ -35,10 +35,10 @@ def get_book_info(force=False):
 
 		book_info_dict = dict(error=False,title=title,image=image_url,description=description)
 
-		with open(_pickle_file_name, 'wb') as handle:
+		with open(_BOOK_INFO_PICKLE_FILE, 'wb') as handle:
 			pickle.dump(book_info_dict, handle)
 	else:
-		with open(_pickle_file_name, 'rb') as handle:
+		with open(_BOOK_INFO_PICKLE_FILE, 'rb') as handle:
 			book_info_dict = pickle.load(handle)
 
 	return book_info_dict
