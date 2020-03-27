@@ -1,2 +1,2 @@
-* Job queue is not retained between runs (i.e. if you exit jobs are lost)
+* None (this means nothing works)
 

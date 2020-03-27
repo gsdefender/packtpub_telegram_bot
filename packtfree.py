@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # packtfree_telegram_bot - Receive Packt Publishing Ltd. Free Learning updates in Telegram each day
-# Copyright (c) 2016 Emanuele Cipolla <emanuele@emanuelecipolla.net>
+# Copyright (c) 2016-2020 Emanuele Cipolla <emanuele@emanuelecipolla.net>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),.
 # to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,.
@@ -13,41 +13,32 @@
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER.
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import httplib2
-from bs4 import BeautifulSoup
-import re
+from selenium import webdriver
 import html2text
-from datetime import datetime
-import delorean
-import urllib
+import pickle
+import os.path
 # This URL can (will?) change:
-free_learning_page = "https://www.packtpub.com/packt/offers/free-learning"
+_free_learning_page = "https://packtpub.com/free-learning"
+_pickle_file_name = 'book_info.pickle'
 
-def get_book_info(base_page=free_learning_page):
-	epoch = delorean.Delorean(datetime.utcnow(), timezone="UTC").truncate('day').epoch
-	image_filename = '.freelearning_cache/book_image_'+str(epoch)+'.jpg'
-	http = httplib2.Http('.freelearning_cache')
-	
-	try:
-		book_info_response, book_info_html = http.request( base_page )
-		book_info_soup = BeautifulSoup(book_info_html,"lxml")
+def get_book_info(force=False):
+	if not os.path.isfile(_pickle_file_name) or force is True:
+		driver = webdriver.Chrome()
+		driver.get( _free_learning_page )
 
-		if book_info_response.fromcache is False:
-		    image_url = 'http:'+book_info_soup.find("img", {"class":"bookimage"})['src']
-    		    urllib.urlretrieve(image_url, image_filename) # why can't httplib2 fetch this?
+		product_img = driver.find_element_by_class_name("product__img")
+		image_url = product_img.get_attribute('src')
+		title = product_img.get_attribute('alt')
+		product_info = driver.find_element_by_class_name("product__info")
 
-		# 1. Value types
+		description = html2text.html2text(product_info.get_attribute('innerHTML').replace("\n","").replace("\r",""))
 
-		title = re.sub('\n', '', re.sub('\t', '',  book_info_soup.find("div", {"class":"dotd-title"}).find("h2").text)) 
-				
-		description_haystack =  book_info_soup.find("div", {"class":"dotd-main-book-summary"}).findAll("div")
-		description = ''
-		
-		for description_needle in description_haystack:
-			if not description_needle.has_attr("class"):
-				description += html2text.html2text(description_needle.text)
-			
-		book_info_dict = dict(error=False,title=title,image=image_filename,description=re.sub("\n",' ',description))	
-		return book_info_dict
-	except httplib2.ServerNotFoundError:
-		return dict(error=True,title="Error",image="",description="Unable to open URL: "+base_page)
+		book_info_dict = dict(error=False,title=title,image=image_url,description=description)
+
+		with open(_pickle_file_name, 'wb') as handle:
+			pickle.dump(book_info_dict, handle)
+	else:
+		with open(_pickle_file_name, 'rb') as handle:
+			book_info_dict = pickle.load(_pickle_file_name)
+
+	return book_info_dict
