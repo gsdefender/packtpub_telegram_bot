@@ -1,2 +1,6 @@
 [Bot]
 token = Enter your bot token here
+; This update time is ok if the bot is run in the Europe/Rome timezone
+autoupdate_hour = 3
+autoupdate_min = 0
+autoupdate_sec = 0
