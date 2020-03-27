@@ -132,9 +132,11 @@ def register(update, context):
     """Adds a job to the queue"""
     chat_id = update.message.chat_id
     _token, autoupdate_time = read_config(config_file)
+    update_time_delta = datetime.timedelta(minutes=60)
+    update_time = autoupdate_time + update_time_delta
 
     # Add job to queue
-    job = context.job_queue.run_daily(send_book_info, autoupdate_time, context=chat_id)
+    job = context.job_queue.run_daily(send_book_info, update_time, context=chat_id)
     context.chat_data['job'] = job
 
     update.message.reply_text('Registration successfully completed.')
