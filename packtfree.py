@@ -39,6 +39,6 @@ def get_book_info(force=False):
 			pickle.dump(book_info_dict, handle)
 	else:
 		with open(_pickle_file_name, 'rb') as handle:
-			book_info_dict = pickle.load(_pickle_file_name)
+			book_info_dict = pickle.load(handle)
 
 	return book_info_dict
