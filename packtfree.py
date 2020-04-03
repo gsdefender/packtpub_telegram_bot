@@ -34,10 +34,10 @@ def get_book_info(force=False):
 		image_url = product_img.get_attribute('src')
 		title = product_img.get_attribute('alt')
 		product_info = driver.find_element_by_class_name("product__info")
-		driver.quit()
 
 		description = html2text.html2text(product_info.get_attribute('innerHTML').replace("\n","").replace("\r",""))
 
+		driver.quit()
 		book_info_dict = dict(error=False,title=title,image=image_url,description=description)
 
 		with open(_BOOK_INFO_PICKLE_FILE, 'wb') as handle:
