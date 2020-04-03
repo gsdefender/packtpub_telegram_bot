@@ -23,8 +23,11 @@ _BOOK_INFO_PICKLE_FILE = 'book_info.pickle'
 
 def get_book_info(force=False):
 	if not os.path.isfile(_BOOK_INFO_PICKLE_FILE) or force is True:
-		driver = webdriver.Chrome()
+		options = webdriver.ChromeOptions()
+		options.add_argument('headless')
+		driver = webdriver.Chrome(chrome_options=options)
 		driver.get( _FREE_LEARNING_PAGE )
+		driver.implicitly_wait(10) # allow for sluggish connection
 
 		product_img = driver.find_element_by_class_name("product__img")
 		image_url = product_img.get_attribute('src')
