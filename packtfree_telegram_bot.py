@@ -163,7 +163,7 @@ def read_config(config_file):
 
     config = configparser.ConfigParser()
     config.read(config_file)
-    if len(config) != 1:
+    if len(config) != 2:
         raise ValueError("Unable to load config file "+config_file)
     token = config['Bot']['token']
     autoupdate_hour =  int(config['Bot']['autoupdate_hour'])
