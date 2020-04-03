@@ -25,6 +25,7 @@ def get_book_info(force=False):
 	if not os.path.isfile(_BOOK_INFO_PICKLE_FILE) or force is True:
 		options = webdriver.ChromeOptions()
 		options.add_argument('headless')
+		options.add_argument('disable-gpu')
 		driver = webdriver.Chrome(chrome_options=options)
 		driver.get( _FREE_LEARNING_PAGE )
 		driver.implicitly_wait(10) # allow for sluggish connection
