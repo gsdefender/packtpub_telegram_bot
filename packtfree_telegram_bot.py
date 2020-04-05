@@ -127,15 +127,16 @@ def send_book_info(update, context):
 def register(update, context):
     """Adds a job to the queue"""
     chat_id = update.message.chat_id
-    _token, autoupdate_time = read_config(CONFIG_FILE)
-    update_time_delta = datetime.timedelta(minutes=60)
-    update_time = autoupdate_time + update_time_delta
+    _token, _scraping_time, broadcast_time = read_config(CONFIG_FILE)
 
     # Add job to queue
-    job = context.job_queue.run_daily(send_book_info, update_time, context=chat_id)
-    context.chat_data['job'] = job
+    if 'job' not in context.char_data:
+        job = context.job_queue.run_daily(send_book_info, broadcast_time, context=chat_id)
+        context.chat_data['job'] = job
 
-    update.message.reply_text('Registration successfully completed.')
+        update.message.reply_text('Registration successfully completed.')
+    else:
+        update.message.reply_text('Already registered.')
 
 
 def unregister(update, context):
@@ -170,14 +171,15 @@ def read_config(config_file):
     autoupdate_min = int(config['Bot']['autoupdate_min'])
     autoupdate_sec = int(config['Bot']['autoupdate_sec'])
     today = datetime.date.today()
-    update_time = datetime.time(hour=autoupdate_hour, minute=autoupdate_min, second=autoupdate_sec)
-    autoupdate_time = datetime.datetime.combine(today, update_time)
+    scraping_time = datetime.time(hour=autoupdate_hour, minute=autoupdate_min, second=autoupdate_sec)
+    broadcast_time = datetime.datetime.combine(today, scraping_time) + datetime.timedelta(hours=2)
+    broadcast_time = broadcast_time.time()
 
-    return (token, autoupdate_time)
+    return (token, scraping_time, broadcast_time)
 
 
 def main():
-    token, autoupdate_time = read_config(CONFIG_FILE)
+    token, scraping_time, _broadcast_time = read_config(CONFIG_FILE)
     updater = Updater(token, use_context=True)
 
     dp = updater.dispatcher
@@ -195,7 +197,7 @@ def main():
     job_queue = updater.job_queue
 
     force_update()
-    job_queue.run_daily(force_update, autoupdate_time)
+    job_queue.run_daily(force_update, scraping_time)
 
     # Periodically save jobs
     job_queue.run_repeating(save_jobs_job, datetime.timedelta(minutes=1))
