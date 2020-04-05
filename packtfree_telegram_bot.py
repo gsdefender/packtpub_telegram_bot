@@ -130,7 +130,7 @@ def register(update, context):
     _token, _scraping_time, broadcast_time = read_config(CONFIG_FILE)
 
     # Add job to queue
-    if 'job' not in context.char_data:
+    if 'job' not in context.chat_data:
         job = context.job_queue.run_daily(send_book_info, broadcast_time, context=chat_id)
         context.chat_data['job'] = job
 
