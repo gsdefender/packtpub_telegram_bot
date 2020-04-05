@@ -62,7 +62,11 @@ def load_jobs(jq):
 
             job.job_queue = jq
 
-            next_t -= datetime.time()  # convert from absolute to relative time
+            try:
+                next_t -= datetime.time()  # convert from absolute to relative time
+            except TypeError:
+                next_t = datetime.datetime.fromtimestamp(next_t)
+                next_t -= datetime.time()
 
             jq._put(job, next_t)
 
@@ -197,16 +201,15 @@ def main():
     job_queue = updater.job_queue
 
     force_update()
-    job_queue.run_daily(force_update, scraping_time)
 
+    # First run
+    job_queue.run_daily(force_update, scraping_time)
     # Periodically save jobs
     job_queue.run_repeating(save_jobs_job, datetime.timedelta(minutes=1))
 
     try:
         load_jobs(job_queue)
-
     except FileNotFoundError:
-        # First run
         pass
 
     # Start the Bot
