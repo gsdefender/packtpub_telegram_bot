@@ -62,13 +62,7 @@ def load_jobs(jq):
 
             job.job_queue = jq
 
-            try:
-                next_t -= datetime.time()  # convert from absolute to relative time
-            except TypeError:
-                next_t = datetime.datetime.fromtimestamp(next_t).time()
-                next_t -= datetime.time()
-
-            jq._put(job, next_t)
+            jq._put(job, time_spec=next_t)
 
 
 def save_jobs(jq):
