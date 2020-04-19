@@ -117,9 +117,17 @@ def force_update(context=None):
 @send_typing_action
 def send_book_info(update, context):
     book_info = get_book_info()
+    chat_id = update.message.chat_id
+    context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
+    context.bot.send_message(chat_id=chat_id, text=book_info['description'])
 
-    context.bot.send_photo(update.message.chat_id, photo=book_info['image'], caption=book_info['title'])
-    context.bot.send_message(chat_id=update.message.chat_id, text=book_info['description'])
+
+# when run in "alarm" mode, things change a little bit:
+def send_book_info_alarm(bot, job):
+    book_info = get_book_info()
+    chat_id = job.context
+    bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
+    bot.send_message(chat_id=chat_id, text=book_info['description'])
 
 
 def register(update, context):
@@ -129,7 +137,7 @@ def register(update, context):
 
     # Add job to queue
     if 'job' not in context.chat_data:
-        job = context.job_queue.run_daily(send_book_info, broadcast_time, context=chat_id)
+        job = context.job_queue.run_daily(send_book_info_alarm, broadcast_time, context=chat_id)
         context.chat_data['job'] = job
 
         update.message.reply_text('Registration successfully completed.')
@@ -159,13 +167,12 @@ def warn(update, context):
 
 
 def read_config(config_file):
-
     config = configparser.ConfigParser()
     config.read(config_file)
     if len(config) != 2:
-        raise ValueError("Unable to load config file "+config_file)
+        raise ValueError("Unable to load config file " + config_file)
     token = config['Bot']['token']
-    autoupdate_hour =  int(config['Bot']['autoupdate_hour'])
+    autoupdate_hour = int(config['Bot']['autoupdate_hour'])
     autoupdate_min = int(config['Bot']['autoupdate_min'])
     autoupdate_sec = int(config['Bot']['autoupdate_sec'])
     today = datetime.date.today()
