@@ -115,19 +115,21 @@ def force_update(context=None):
 
 
 @send_typing_action
-def send_book_info(update, context):
-    book_info = get_book_info()
+def send_book_info_get(update, context):
     chat_id = update.message.chat_id
-    context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
-    context.bot.send_message(chat_id=chat_id, text=book_info['description'])
+    send_book_info(context, chat_id)
 
 
 # when run in "alarm" mode, things change a little bit:
-def send_book_info_alarm(bot, job):
+def send_book_info_alarm(context):
+    chat_id = context.job.context
+    send_book_info(context, chat_id)
+
+
+def send_book_info(context, chat_id):
     book_info = get_book_info()
-    chat_id = job.context
-    bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
-    bot.send_message(chat_id=chat_id, text=book_info['description'])
+    context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
+    context.bot.send_message(chat_id=chat_id, text=book_info['description'])
 
 
 def register(update, context):
