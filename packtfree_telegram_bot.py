@@ -99,11 +99,23 @@ def start(update, context):
         'Hi! Use /register to subscribe yourself to updates, or /get to immediately request information.')
 
 
+def send_typing_action(func):
+    """Sends typing action while processing func command."""
+
+    @wraps(func)
+    def command_func(update, context, *args, **kwargs):
+        context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
+        return func(update, context, *args, **kwargs)
+
+    return command_func
+
+
 def force_update(context=None):
     book_info = get_book_info(True)
     if book_info['error'] is True:
         logger.error('get_book_info error: %s', book_info['description'])
 
+@send_typing_action
 def send_book_info_get(update, context):
     chat_id = update.message.chat_id
     send_book_info(context, chat_id)
@@ -117,16 +129,23 @@ def send_book_info_alarm(context):
 
 def send_book_info(context, chat_id):
     book_info = get_book_info()
-    if isinstance(context, Update):
-        sender_instance = context.message.bot
-    else:
-        sender_instance = context.bot
+    is_interactive = isinstance(context, Update)
+
     if book_info['error'] is False:
         if book_info['image'] is not None:
-            sender_instance.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
-        sender_instance.send_message(chat_id=chat_id, text=book_info['description'])
+            if not is_interactive:
+                context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
+            else:
+                context.reply_photo(photo=book_info['image'], caption=book_info['title'])
+        if not is_interactive:
+            context.bot.send_message(chat_id=chat_id, text=book_info['description'])
+        else:
+            context.reply_message(text=book_info['description'])
     else:
-        sender_instance.send_message(chat_id=chat_id, text="Unable to fetch info")
+        if not is_interactive:
+            context.bot.send_message(chat_id=chat_id, text="Unable to fetch info")
+        else:
+            context.reply_message(text="Unable to fetch info")
 
 def register(update, context):
     """Adds a job to the queue"""
