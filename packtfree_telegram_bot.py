@@ -99,23 +99,11 @@ def start(update, context):
         'Hi! Use /register to subscribe yourself to updates, or /get to immediately request information.')
 
 
-def send_typing_action(func):
-    """Sends typing action while processing func command."""
-
-    @wraps(func)
-    def command_func(update, context, *args, **kwargs):
-        context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
-        return func(update, context, *args, **kwargs)
-
-    return command_func
-
-
 def force_update(context=None):
     book_info = get_book_info(True)
     if book_info['error'] is True:
         logger.error('get_book_info error: %s', book_info['description'])
 
-@send_typing_action
 def send_book_info_get(update, context):
     chat_id = update.message.chat_id
     send_book_info(context, chat_id)
