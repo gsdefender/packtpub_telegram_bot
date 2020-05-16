@@ -130,7 +130,7 @@ def send_book_info_alarm(context):
 def send_book_info(context, chat_id):
     book_info = get_book_info()
     if isinstance(context, Update):
-        sender_instance = context.message
+        sender_instance = context.message.bot
     else:
         sender_instance = context.bot
     if book_info['error'] is False:
