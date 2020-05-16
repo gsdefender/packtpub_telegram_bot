@@ -29,6 +29,7 @@ import datetime
 import pickle
 import configparser
 from functools import wraps
+import os
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -140,12 +141,12 @@ def send_book_info(context, chat_id):
         if not is_interactive:
             context.bot.send_message(chat_id=chat_id, text=book_info['description'])
         else:
-            context.message.reply_message(text=book_info['description'])
+            context.message.reply_text(text=book_info['description'])
     else:
         if not is_interactive:
             context.bot.send_message(chat_id=chat_id, text="Unable to fetch info")
         else:
-            context.message.reply_message(text="Unable to fetch info")
+            context.message.reply_text(text="Unable to fetch info")
 
 def register(update, context):
     """Adds a job to the queue"""
@@ -199,8 +200,14 @@ def read_config(config_file):
 
     return (token, scraping_time, broadcast_time)
 
+def write_pid_to_file():
+    pid = str(os.getpid())
+    with open('packtfree_telegram_bot.pid', 'w') as pid_file:
+        pid_file.write(pid)
 
 def main():
+    write_pid_to_file()
+
     token, scraping_time, _broadcast_time = read_config(CONFIG_FILE)
     updater = Updater(token, use_context=True)
 
