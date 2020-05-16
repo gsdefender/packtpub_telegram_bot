@@ -21,7 +21,7 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 
-from telegram import ChatAction
+from telegram import ChatAction, Update
 from telegram.ext import Updater, CommandHandler, Job
 import logging
 from packtfree import get_book_info
@@ -129,12 +129,16 @@ def send_book_info_alarm(context):
 
 def send_book_info(context, chat_id):
     book_info = get_book_info()
+    if isinstance(context, Update):
+        sender_instance = context.message
+    else:
+        sender_instance = context.bot
     if book_info['error'] is False:
         if book_info['image'] is not None:
-            context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
-        context.bot.send_message(chat_id=chat_id, text=book_info['description'])
+            sender_instance.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
+        sender_instance.send_message(chat_id=chat_id, text=book_info['description'])
     else:
-        context.bot.send_message(chat_id=chat_id, text="Unable to fetch info")
+        sender_instance.send_message(chat_id=chat_id, text="Unable to fetch info")
 
 def register(update, context):
     """Adds a job to the queue"""
