@@ -136,16 +136,16 @@ def send_book_info(context, chat_id):
             if not is_interactive:
                 context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
             else:
-                context.reply_photo(photo=book_info['image'], caption=book_info['title'])
+                context.message.reply_photo(photo=book_info['image'], caption=book_info['title'])
         if not is_interactive:
             context.bot.send_message(chat_id=chat_id, text=book_info['description'])
         else:
-            context.reply_message(text=book_info['description'])
+            context.message.reply_message(text=book_info['description'])
     else:
         if not is_interactive:
             context.bot.send_message(chat_id=chat_id, text="Unable to fetch info")
         else:
-            context.reply_message(text="Unable to fetch info")
+            context.message.reply_message(text="Unable to fetch info")
 
 def register(update, context):
     """Adds a job to the queue"""
