@@ -111,8 +111,9 @@ def send_typing_action(func):
 
 
 def force_update(context=None):
-    get_book_info(True)
-
+    book_info = get_book_info(True)
+    if book_info['error'] is True:
+        logger.error('get_book_info error: %s', book_info['description'])
 
 @send_typing_action
 def send_book_info_get(update, context):
@@ -128,9 +129,12 @@ def send_book_info_alarm(context):
 
 def send_book_info(context, chat_id):
     book_info = get_book_info()
-    context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
-    context.bot.send_message(chat_id=chat_id, text=book_info['description'])
-
+    if book_info['error'] is False:
+        if book_info['image'] is not None:
+            context.bot.send_photo(chat_id, photo=book_info['image'], caption=book_info['title'])
+        context.bot.send_message(chat_id=chat_id, text=book_info['description'])
+    else:
+        context.bot.send_message(chat_id=chat_id, text="Unable to fetch info")
 
 def register(update, context):
     """Adds a job to the queue"""
@@ -205,7 +209,7 @@ def main():
 
     force_update()
 
-    # First run
+    # force daily update at scraping_time
     job_queue.run_daily(force_update, scraping_time)
     # Periodically save jobs
     job_queue.run_repeating(save_jobs_job, datetime.timedelta(minutes=1))
